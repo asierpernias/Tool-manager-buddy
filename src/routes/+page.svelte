@@ -32,6 +32,13 @@
 
     let detectedObjects = new Set<string>();
     let firstDetection = true;
+    const THRESHOLD_FRAMES = 5;
+    const missingFrames: Record<string, number> = Object.fromEntries(
+        Object.keys(ToolNames).map(k => [k, 0])
+    );
+    const presentFrames: Record<string, number> = Object.fromEntries(
+        Object.keys(ToolNames).map(k=> [k, 0])
+    );
     const boxed = writable<Prediction[]>([]);
 
     function speak(text: string){
@@ -69,18 +76,30 @@
             const isDetected = currentObjects.has(objectClass);
 
             if (wasDetected && !isDetected){
-                speak(`You have taken the ${ToolNames[objectClass]}`);
-            }
+                missingFrames[objectClass]++;
+                presentFrames[objectClass] = 0;
 
-            if (!wasDetected && isDetected){
-                speak(`The ${ToolNames[objectClass]} has returned`)
+                if (missingFrames[objectClass] === THRESHOLD_FRAMES){
+                    speak(`You have taken the ${ToolNames[objectClass]}`);
+                    detectedObjects.delete(objectClass);
+                }
+                
+            } else if (!wasDetected && isDetected){
+                presentFrames[objectClass]++;
+                missingFrames[objectClass] = 0;
+                if (presentFrames[objectClass] === THRESHOLD_FRAMES){
+                    speak(`You have returned the ${ToolNames[objectClass]}`);
+                    detectedObjects.add(objectClass);
+                }
+            } else {
+                missingFrames[objectClass] = 0;
+                presentFrames[objectClass] = 0;
             }
 
             newStates[objectClass] = isDetected ? 'on-table' : 'taken';
         }
 
         toolStates.set(newStates);
-        detectedObjects = currentObjects;
     }
 
     onMount(() => {
