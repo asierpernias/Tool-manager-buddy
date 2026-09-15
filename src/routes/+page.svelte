@@ -15,17 +15,24 @@
     };
 
     const ToolNames: Record<string, string> = {
-        Hammer: 'hammer',
-        Caliper: 'caliper',
-        'WD-40': "WD-40"
-    };
+    Caliper: 'caliper',
+    Hammer: 'hammer',
+    Metro: 'metro',
+    Pliers: 'pliers',
+    Ruler: 'ruler',
+    'Surface treatment': 'surface treatment',
+    'WD-40': 'WD-40'
+};
 
-    const ToolIcons: Record<string, string> = {
-        Hammer: '🔨',
-        Caliper: '📐',
-        'WD-40': '🔧'
-    };
-
+const ToolIcons: Record<string, string> = {
+    Caliper: '📐',
+    Hammer: '🔨',
+    Metro: '📏',
+    Pliers: '🔩',
+    Ruler: '📋',
+    'Surface treatment': '🧴',
+    'WD-40': '🔧'
+};
     const toolStates = writable<Record<string,'on-table' | 'taken'>>(
         Object.fromEntries(Object.keys(ToolNames).map(k => [k, 'on-table']))
     );
@@ -135,15 +142,31 @@
                 source: camera,
                 connector,
                 wrtcParams: {
-                    workspaceName: 'asier-cfans',
-                    workflowId: 'buddy-1nkdy',
+                    workflowSpec: {
+                        version: "1.0",
+                        inputs: [{ type: "InferenceImage", name: "image" }],
+                        steps: [
+                            {
+                                type: "roboflow_core/roboflow_object_detection_model@v2",
+                                name: "model",
+                                image: "$inputs.image",
+                                model_id: "asier-cfans/buddy-1nkdy-4-rfdetr-large-t1"
+                            }
+                        ],
+                        outputs: [
+                            {
+                                type: "JsonField",
+                                name: "predictions",
+                                selector: "$steps.model.predictions"
+                            }
+                        ]
+                    },
+                    imageInputName: "image",
                     streamOutputNames: [],
-                    dataOutputNames: ['predictions'],
-                    processingTimeout: 3600,
-                    requestedPlan: 'webrtc-gpu-medium',
-                    requestedRegion: 'us'
+                    dataOutputNames: ["predictions"]
                 },
                 onData: (data: any) => {
+                    console.log("RAW DATA", JSON.stringify(data, null, 2));
                     const predictions =
                         data.serialized_output_data?.predictions?.predictions ?? [];
 
