@@ -1,5 +1,4 @@
 import { json } from "@sveltejs/kit";
-import { InferenceHTTPClient } from "@roboflow/inference-sdk";
 import { ROBOFLOW_API_KEY } from "$env/static/private";
 
 export async function GET() {
@@ -11,13 +10,12 @@ export async function GET() {
     }
 
     try {
-        const client = InferenceHTTPClient.init({
-            apiKey: ROBOFLOW_API_KEY,
-            serverUrl: "https://serverless.roboflow.com"
-        });
+        const response = await fetch(
+            `https://api.roboflow.com/webrtc_turn_config?api_key=${ROBOFLOW_API_KEY}`,
+            {method: "GET", headers: {"Content-Type": "application/json"}}
+        );
 
-        const iceServers = await client.fetchTurnConfig();
-
+        const iceServers = response.ok ? (await response.json()) : null;
         return json({ iceServers });
     } catch (error) {
         console.error("Error fetching Turn config:", error);

@@ -9,22 +9,37 @@ export async function POST({ request }) {
     }
 
     try {
-        const { InferenceHTTPClient } = await import("@roboflow/inference-sdk");
 
-        const client = InferenceHTTPClient.init({
-            apiKey: ROBOFLOW_API_KEY,
-            serverUrl: 'https://serverless.roboflow.com'
+        const body = {
+            workflow_configuration: {
+                type: "WorkflowConfiguration",
+                image_input_name: wrtcParams.image_input_name,
+                workflow_parameters: {},
+                workflows_thread_pool_workers: 4,
+                cancel_thread_pool_tasks_on_exit: true,
+                video_metadata_input_name: "video_metadata",
+                workflow_specification: wrtcParams.workflowSpec
+            },
+            api_key: ROBOFLOW_API_KEY,
+            webrtc_realtime_processing: true,
+            webrtc_offer: {sdp: offer.sdp, type: offer.type},
+            webrtc_config: null,
+            stream_output: wrtcParams.streamOutputNames,
+            data_output: wrtcParams.dataOutputNames,
+        };
+
+        const response = await fetch("https://serverless.roboflow.com/initialise_webrtc_worker", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(body)
         });
 
-        const answer = await client.initializeWebrtcWorker({
-            offer,
-            workflowSpec: wrtcParams.workflowSpec,
-            config: {
-                imageInputName: wrtcParams.imageInputName,
-                streamOutputNames: wrtcParams.streamOutputNames,
-                dataOutputNames: wrtcParams.dataOutputNames
-            }
-        });
+        if (!response.ok) {
+            const detail = await response.text();
+            return json({error: "The connection with Roboflow failed", detail}, {status: response.status});
+        }
+
+        const answer = await response.json();
 
         console.log('Roboflow answer:', JSON.stringify(answer, null, 2));
         return json(answer);
