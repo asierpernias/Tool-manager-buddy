@@ -1,42 +1,17 @@
-# sv
+# Tool Manager Buddy
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This is my vision-based buddy made for the YSWS from Hack Club called [Buddy](https://buddy.hackclub.com/shop.html). It detects tools on my wall in real time using the browser camera, and gives voice feedback whenever a tool is picked up or returned, depending on how many tools are on the table. It also shows the tool status on screen.
 
-## Creating a project
+## How it works
 
-If you're seeing this, you've probably already done this step. Congrats!
+- The browser captures video from the user's camera.
+- The video is streamed to Roboflow via WebRTC for real-time inference using my custom-trained object detection model.
+- Roboflow returns predictions over the same WebRTC channel.
+- The app draws detection boxes over the video and compares the current state with the previous one to detect changes.
+- When it detects a stable change, it announces it by voice using the Web Speech API and updates the side status panel.
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Deployed version
 
-To recreate this project with the same configuration:
+[Here](https://tool-manager-buddy.vercel.app) you can try it as a web version.
 
-```sh
-# recreate this project
-npx sv@0.17.0 create --template minimal --types ts --add prettier --install npm .
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+**Note: it is trained to work with my custom model/tools.**
