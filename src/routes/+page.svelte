@@ -5,6 +5,9 @@
 
     let videoElement: HTMLVideoElement;
 
+    let globalState = 'Uknown';
+    let actualState;
+
     type Prediction = {
         x: number;
         y: number;
@@ -64,6 +67,35 @@ const ToolIcons: Record<string, string> = {
                 .filter((prediction) => prediction.confidence >= 0.5)
                 .map((prediction) => prediction.class)
         );
+
+        if (currentObjects.size == 7) {
+            actualState = 'ALL_IN';
+        } else if (currentObjects.size == 0) {
+            actualState = 'ALL_OUT';
+        } else if (currentObjects.size == 1){
+            actualState = "ONLY_ONE";
+        } else if (currentObjects.size == 4){
+            actualState = 'HALF';
+        } else {
+            actualState = 'Some_In';
+        }
+
+        if (actualState !== globalState){
+            if (actualState === 'ALL_OUT'){
+                speak("All the tools are out.");
+                globalState = actualState;
+            } else if (actualState === "ALL_IN"){
+                speak("All the tools are on the desk.");
+                globalState = actualState;
+            } else if (actualState === "HALF"){
+                speak("Half the tools are in, half out");
+                globalState = actualState;
+            } else if (actualState === "ONLY_ONE"){
+                speak("Only one of your tools is in the table, either you are working, or you are really unorganized");
+                globalState = actualState;
+            }
+        }
+        
 
         if (firstDetection){
             detectedObjects = currentObjects;
