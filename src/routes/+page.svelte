@@ -4,7 +4,7 @@
     import { connectors, streams, webrtc } from '@roboflow/inference-sdk';
 
     let videoElement: HTMLVideoElement;
-    let isLoading = true;
+    let isLoading = $state(true);
 
     let globalState = 'Uknown';
     let actualState;
