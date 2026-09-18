@@ -4,6 +4,7 @@
     import { connectors, streams, webrtc } from '@roboflow/inference-sdk';
 
     let videoElement: HTMLVideoElement;
+    let isLoading = true;
 
     let globalState = 'Uknown';
     let actualState;
@@ -212,6 +213,7 @@ const ToolIcons: Record<string, string> = {
                 }
             });
             console.log('2 - WebRTC conectado');
+            isLoading = false;
             if (videoElement && camera) {
                 videoElement.srcObject = camera;
                 await videoElement.play();
@@ -246,6 +248,11 @@ const ToolIcons: Record<string, string> = {
     </header>    
     <div class="layout">
         <div class="video-container"> 
+            {#if isLoading}
+                <div class="loading-overlay">
+                    <p>Sorry for the wait, Buddy is waking up...</p>
+                </div>
+            {/if}
             <video
                 bind:this={videoElement}
                 autoplay
@@ -328,6 +335,19 @@ const ToolIcons: Record<string, string> = {
         display:flex;
         gap: 1.5rem;
         align-items: flex-start;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1rem;
+        text-align: center;
+        padding: 0 2rem;
+        z-index: 2;
     }
 
     .video-container {
